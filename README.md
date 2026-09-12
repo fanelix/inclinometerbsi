@@ -96,14 +96,15 @@ tools/build_artifact.py  menyiapkan berkas untuk publikasi sebagai Artifact
 
 ## Deploy
 
-Setiap push ke `main` dideploy ke GitHub Pages oleh
-`.github/workflows/pages.yml`. Agar berjalan, Settings → Pages → Source harus
-disetel ke **GitHub Actions**. Yang diunggah hanya `index.html`, `.nojekyll`,
-dan folder `assets/`, sehingga `tools/` dan `README.md` tetap ada di
-repositori tetapi tidak disajikan sebagai halaman.
+Situs disajikan GitHub Pages langsung dari cabang `main` folder root, yaitu
+Settings → Pages → Source: **Deploy from a branch**. Tidak ada workflow dan
+tidak ada proses build, jadi setiap push ke `main` langsung terbit di
+https://fanelix.github.io/inclinometerbsi/
 
-Berbeda dengan mode "Deploy from a branch", cara ini meninggalkan catatan run
-di tab Actions, jadi saat situs tidak muncul penyebabnya bisa dibaca.
+Berkas `.nojekyll` membuat Pages menyajikan berkas apa adanya tanpa menjalankan
+Jekyll. Karena mode ini menyajikan seluruh isi repositori, `README.md` dan
+`tools/` juga bisa dibuka lewat URL. Keduanya memang sudah publik di
+repositori ini.
 
 `tools/build_artifact.py` menyalin bagian bertanda `<!--#head-->` dan
 `<!--#body-->` dari `index.html` ke `dist/artifact.html`, yaitu bentuk tanpa
