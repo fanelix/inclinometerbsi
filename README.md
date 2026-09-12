@@ -94,6 +94,17 @@ assets/styles.css   token warna dan tata letak
 tools/build_artifact.py  menyiapkan berkas untuk publikasi sebagai Artifact
 ```
 
+## Deploy
+
+Setiap push ke `main` dideploy ke GitHub Pages oleh
+`.github/workflows/pages.yml`. Agar berjalan, Settings → Pages → Source harus
+disetel ke **GitHub Actions**. Yang diunggah hanya `index.html`, `.nojekyll`,
+dan folder `assets/`, sehingga `tools/` dan `README.md` tetap ada di
+repositori tetapi tidak disajikan sebagai halaman.
+
+Berbeda dengan mode "Deploy from a branch", cara ini meninggalkan catatan run
+di tab Actions, jadi saat situs tidak muncul penyebabnya bisa dibaca.
+
 `tools/build_artifact.py` menyalin bagian bertanda `<!--#head-->` dan
 `<!--#body-->` dari `index.html` ke `dist/artifact.html`, yaitu bentuk tanpa
 pembungkus dokumen yang dibutuhkan saat halaman dipublikasikan sebagai Artifact.
