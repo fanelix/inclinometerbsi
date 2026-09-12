@@ -175,11 +175,16 @@
     el.value = String(selected);
   }
 
-  function setDataset(next, note) {
+  /**
+   * @param keepBase true only when `next` continues the dataset already on
+   *   screen (a grown file merged in, or the stored copy reloaded). A fresh
+   *   upload starts from the first reading, which is the base an inclinometer
+   *   survey is referenced to.
+   */
+  function setDataset(next, note, keepBase) {
     ds = next;
     hiddenSeries = {};
-    var idx = currentIndices();
-    S.baseTime = ds.t[Math.min(idx.base, ds.count - 1)];
+    S.baseTime = keepBase && S.baseTime != null ? ds.t[IPI.nearest(ds, S.baseTime)] : ds.t[0];
     S.curTime = ds.t[ds.count - 1];
     fillReadingSelect($('base-select'), IPI.nearest(ds, S.baseTime));
     fillReadingSelect($('cur-select'), ds.count - 1);
@@ -221,7 +226,8 @@
     });
 
     Promise.all(jobs).then(function (parts) {
-      var merged = ds && !ds.demo ? ds : null, notes = [];
+      var hadReal = !!(ds && !ds.demo);
+      var merged = hadReal ? ds : null, notes = [];
       parts.sort(function (a, b) { return a.name.localeCompare(b.name); });
       for (var i = 0; i < parts.length; i++) {
         var one = IPI.parse(parts[i].text, parts[i].name);
@@ -229,11 +235,11 @@
         try { merged = IPI.merge(merged, one); }
         catch (e) { if (e.replace) { merged = one; notes.push(e.message); } else throw e; }
       }
-      var added = merged.count - (ds && !ds.demo ? ds.count : 0);
+      var added = merged.count - (hadReal ? ds.count : 0);
       notes.unshift(merged.count + ' pembacaan tersedia' +
-        (added > 0 && ds && !ds.demo ? ' (+' + added + ' baru)' : '') + '.');
+        (added > 0 && hadReal ? ' (+' + added + ' baru)' : '') + '.');
       if (merged.warnings.length) notes = notes.concat(merged.warnings);
-      setDataset(merged, notes.join(' '));
+      setDataset(merged, notes.join(' '), hadReal);
       storeDataset(merged);
     }).catch(function (err) {
       message(err && err.message ? err.message : 'File tidak bisa dibaca.', 'error');
@@ -711,10 +717,10 @@
 
     $('clear-data').addEventListener('click', function () {
       storeDataset(null);
-      setDataset(IPI.demo(), 'Data dihapus. Yang tampil sekarang adalah data contoh.');
+      setDataset(IPI.demo(), 'Data dihapus. Yang tampil sekarang adalah data contoh.', false);
     });
     $('load-demo').addEventListener('click', function () {
-      setDataset(IPI.demo(), 'Data contoh dimuat.');
+      setDataset(IPI.demo(), 'Data contoh dimuat.', false);
     });
 
     /* geometry */
@@ -846,11 +852,11 @@
     Promise.race([readDataset(), guard]).then(function (stored) {
       if (stored && stored.n && stored.count) {
         try {
-          setDataset(IPI.sort(stored), 'Data tersimpan dimuat ulang dari peramban ini.');
+          setDataset(IPI.sort(stored), 'Data tersimpan dimuat ulang dari peramban ini.', true);
           return;
         } catch (e) { /* fall through to the demo string */ }
       }
-      setDataset(IPI.demo(), 'Belum ada data. Yang tampil adalah data contoh — unggah file .dat Anda untuk menggantinya.');
+      setDataset(IPI.demo(), 'Belum ada data. Yang tampil adalah data contoh — unggah file .dat Anda untuk menggantinya.', false);
     });
   }
 
