@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--#head-->
+<title>IPI Profile Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+<!--#/head-->
+</head>
+<body>
+<!--#body-->
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">IPI</span>
+    <div>
+      <h1>IPI Profile Sheet</h1>
+      <p>In-place inclinometer &middot; pembacaan datalogger TOA5</p>
+    </div>
+  </div>
+  <div class="station" id="station"></div>
+</header>
+
+<div class="shell">
+
+  <aside class="rail" aria-label="Pengaturan">
+
+    <details class="group" id="g-data" open>
+      <summary><span class="group-num">01</span> Data</summary>
+      <div class="group-body">
+        <label class="drop" id="drop" for="file">
+          <b>Unggah file .dat</b>
+          <span>klik atau seret ke sini &middot; bisa beberapa file</span>
+          <input type="file" id="file" accept=".dat,.csv,.txt,text/plain,text/csv" multiple>
+        </label>
+        <p class="hint">File baru digabung dengan data yang sudah ada berdasarkan TIMESTAMP, jadi Anda cukup mengunggah file terbarunya saja.</p>
+        <div id="messages"></div>
+        <dl class="meta-list" id="meta"></dl>
+        <div class="btn-row">
+          <button type="button" class="btn" id="clear-data">Hapus data</button>
+          <button type="button" class="btn" id="load-demo">Muat data contoh</button>
+        </div>
+      </div>
+    </details>
+
+    <details class="group" id="g-geom" open>
+      <summary><span class="group-num">02</span> Geometri sensor</summary>
+      <div class="group-body">
+        <div class="field">
+          <span class="field-label" id="lbl-gauge">Panjang tiap sensor (gauge length)</span>
+          <div class="seg" role="group" aria-labelledby="lbl-gauge" id="seg-gauge">
+            <button type="button" data-v="1" aria-pressed="false">1 m</button>
+            <button type="button" data-v="2" aria-pressed="false">2 m</button>
+            <button type="button" data-v="3" aria-pressed="true">3 m</button>
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label for="gauge-custom">Nilai lain (m)</label>
+            <input type="number" id="gauge-custom" min="0.05" max="20" step="0.05" value="3">
+          </div>
+          <div class="field">
+            <label for="top-depth">Kedalaman sensor teratas (m)</label>
+            <input type="number" id="top-depth" step="0.1" value="0">
+          </div>
+        </div>
+        <div class="field">
+          <span class="field-label" id="lbl-order">Urutan penomoran sensor</span>
+          <div class="seg" role="group" aria-labelledby="lbl-order" id="seg-order">
+            <button type="button" data-v="top" aria-pressed="true">S1 di atas</button>
+            <button type="button" data-v="bottom" aria-pressed="false">S1 di bawah</button>
+          </div>
+          <p class="hint" id="order-hint"></p>
+        </div>
+        <div class="field">
+          <span class="field-label" id="lbl-fixed">Titik jepit (dianggap diam)</span>
+          <div class="seg" role="group" aria-labelledby="lbl-fixed" id="seg-fixed">
+            <button type="button" data-v="bottom" aria-pressed="true">Dasar lubang</button>
+            <button type="button" data-v="top" aria-pressed="false">Kepala lubang</button>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="group" id="g-base" open>
+      <summary><span class="group-num">03</span> Base reading</summary>
+      <div class="group-body">
+        <div class="field">
+          <label for="base-select">Pembacaan acuan nol</label>
+          <select id="base-select"></select>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="btn" id="base-first">Pembacaan pertama</button>
+          <button type="button" class="btn" id="base-prev">Mundur 1</button>
+          <button type="button" class="btn" id="base-next">Maju 1</button>
+        </div>
+        <p class="hint">Seluruh displacement dihitung relatif terhadap pembacaan ini. Di grafik, base reading adalah garis nol.</p>
+      </div>
+    </details>
+
+    <details class="group" id="g-read" open>
+      <summary><span class="group-num">04</span> Pembacaan yang diplot</summary>
+      <div class="group-body">
+        <div class="field">
+          <label for="cur-select">Pembacaan saat ini</label>
+          <select id="cur-select"></select>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="btn" id="cur-last">Terbaru</button>
+          <button type="button" class="btn" id="cur-prev">Mundur 1</button>
+          <button type="button" class="btn" id="cur-next">Maju 1</button>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label for="hist-count">Profil riwayat</label>
+            <select id="hist-count">
+              <option value="0">tidak ada</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3" selected>3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="hist-spacing">Jarak antar profil</label>
+            <select id="hist-spacing">
+              <option value="even" selected>merata</option>
+              <option value="1">1 hari</option>
+              <option value="7">7 hari</option>
+              <option value="30">30 hari</option>
+              <option value="90">90 hari</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="group" id="g-axis" open>
+      <summary><span class="group-num">05</span> Sumbu &amp; skala</summary>
+      <div class="group-body">
+        <div class="field">
+          <span class="field-label" id="lbl-axis">Sumbu yang ditampilkan</span>
+          <div class="seg" role="group" aria-labelledby="lbl-axis" id="seg-axis">
+            <button type="button" data-v="a" aria-pressed="true">A</button>
+            <button type="button" data-v="b" aria-pressed="false">B</button>
+            <button type="button" data-v="ab" aria-pressed="false">A &amp; B</button>
+          </div>
+        </div>
+        <label class="check"><input type="checkbox" id="flip-a"> Balik tanda sumbu A</label>
+        <label class="check"><input type="checkbox" id="flip-b"> Balik tanda sumbu B</label>
+
+        <div class="field">
+          <label class="check"><input type="checkbox" id="cum-auto" checked> Sumbu X Cumulative otomatis</label>
+          <div class="row">
+            <div class="field"><label for="cum-min">min</label><input type="number" id="cum-min" step="any" value="-10"></div>
+            <div class="field"><label for="cum-max">maks</label><input type="number" id="cum-max" step="any" value="10"></div>
+            <div class="field"><label for="cum-step">interval</label><input type="number" id="cum-step" step="any" min="0" value="2"></div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="check"><input type="checkbox" id="inc-auto" checked> Sumbu X Incremental otomatis</label>
+          <div class="row">
+            <div class="field"><label for="inc-min">min</label><input type="number" id="inc-min" step="any" value="-2"></div>
+            <div class="field"><label for="inc-max">maks</label><input type="number" id="inc-max" step="any" value="2"></div>
+            <div class="field"><label for="inc-step">interval</label><input type="number" id="inc-step" step="any" min="0" value="0.5"></div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="check"><input type="checkbox" id="depth-auto" checked> Sumbu kedalaman otomatis</label>
+          <div class="row-2">
+            <div class="field"><label for="depth-from">dari (m)</label><input type="number" id="depth-from" step="any" value="0"></div>
+            <div class="field"><label for="depth-to">sampai (m)</label><input type="number" id="depth-to" step="any" value="66"></div>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="field-label" id="lbl-incmode">Tampilan Incremental</span>
+          <div class="seg" role="group" aria-labelledby="lbl-incmode" id="seg-incmode">
+            <button type="button" data-v="line" aria-pressed="true">Garis</button>
+            <button type="button" data-v="bar" aria-pressed="false">Batang</button>
+          </div>
+          <p class="hint">Batang hanya dipakai saat satu profil ditampilkan.</p>
+        </div>
+        <label class="check"><input type="checkbox" id="markers" checked> Tampilkan titik sensor</label>
+      </div>
+    </details>
+  </aside>
+
+  <main class="stage">
+    <dl class="readouts" id="readouts"></dl>
+
+    <div class="legend" id="legend" aria-label="Keterangan profil"></div>
+
+    <section class="plots" id="plots">
+      <figure class="chart" id="card-cum-a">
+        <figcaption class="chart-head">
+          <div>
+            <h2>Cumulative Displacement</h2>
+            <p>relatif terhadap base reading</p>
+          </div>
+          <span class="chart-tag">Sumbu A &middot; mm</span>
+        </figcaption>
+        <div class="plot" id="plot-cum-a"></div>
+      </figure>
+
+      <figure class="chart" id="card-inc-a">
+        <figcaption class="chart-head">
+          <div>
+            <h2>Incremental Displacement</h2>
+            <p>perubahan tiap segmen sensor</p>
+          </div>
+          <span class="chart-tag">Sumbu A &middot; mm</span>
+        </figcaption>
+        <div class="plot" id="plot-inc-a"></div>
+      </figure>
+
+      <figure class="chart" id="card-cum-b" hidden>
+        <figcaption class="chart-head">
+          <div>
+            <h2>Cumulative Displacement</h2>
+            <p>relatif terhadap base reading</p>
+          </div>
+          <span class="chart-tag">Sumbu B &middot; mm</span>
+        </figcaption>
+        <div class="plot" id="plot-cum-b"></div>
+      </figure>
+
+      <figure class="chart" id="card-inc-b" hidden>
+        <figcaption class="chart-head">
+          <div>
+            <h2>Incremental Displacement</h2>
+            <p>perubahan tiap segmen sensor</p>
+          </div>
+          <span class="chart-tag">Sumbu B &middot; mm</span>
+        </figcaption>
+        <div class="plot" id="plot-inc-b"></div>
+      </figure>
+    </section>
+
+    <details class="panel" id="panel-history" open>
+      <summary>Riwayat waktu pada satu kedalaman</summary>
+      <div class="panel-body">
+        <div class="panel-tools">
+          <div class="field">
+            <label for="hist-node">Kedalaman yang dipantau</label>
+            <select id="hist-node"></select>
+          </div>
+          <p class="hint" id="hist-note"></p>
+        </div>
+        <div class="plot short" id="plot-hist"></div>
+      </div>
+    </details>
+
+    <details class="panel" id="panel-table">
+      <summary>Tabel hasil perhitungan</summary>
+      <div class="panel-body">
+        <div class="panel-tools">
+          <button type="button" class="btn" id="export-profile">Unduh profil (CSV)</button>
+          <button type="button" class="btn" id="export-history">Unduh riwayat waktu (CSV)</button>
+          <p class="hint" id="table-note"></p>
+        </div>
+        <div class="table-wrap">
+          <table id="table">
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+  </main>
+</div>
+
+<footer class="foot">
+  <p><b>Cara hitung.</b> Sensor melaporkan sin&thinsp;&theta; terhadap vertikal. Defleksi satu segmen = gauge&nbsp;length &times; sin&thinsp;&theta;. Incremental displacement = selisih defleksi segmen terhadap base reading. Cumulative displacement = penjumlahan incremental dari titik jepit ke arah titik yang ditinjau, sehingga bernilai nol di titik jepit.</p>
+  <p>Incremental diplot di tengah segmen; cumulative diplot di batas antar segmen. Sensor yang datanya NAN dihitung nol pada penjumlahan cumulative dan ditandai sebagai rumpang.</p>
+  <p>Seluruh perhitungan berjalan di peramban Anda. File tidak dikirim ke mana pun.</p>
+</footer>
+
+<script src="assets/parser.js"></script>
+<script src="assets/compute.js"></script>
+<script src="assets/chart.js"></script>
+<script src="assets/app.js"></script>
+<!--#/body-->
+</body>
+</html>
